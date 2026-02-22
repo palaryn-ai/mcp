@@ -1,0 +1,45 @@
+{
+  "name": "@palaryn/mcp",
+  "version": "0.1.0",
+  "description": "Palaryn MCP Server - Security, DLP, and cost controls for AI agent HTTP requests via Model Context Protocol",
+  "main": "node_modules/palaryn/dist/src/mcp/server.js",
+  "bin": {
+    "palaryn-mcp": "./bin/palaryn-mcp.js"
+  },
+  "scripts": {
+    "start": "node node_modules/palaryn/dist/src/mcp/server.js",
+    "postinstall": "cd node_modules/palaryn && npm ci && npm run build"
+  },
+  "files": [
+    "bin/",
+    "policy-packs/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-agent",
+    "security",
+    "dlp",
+    "gateway",
+    "claude-code",
+    "cursor",
+    "palaryn"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Palanyr/mcp.git"
+  },
+  "homepage": "https://github.com/Palanyr/mcp#readme",
+  "bugs": {
+    "url": "https://github.com/Palanyr/mcp/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "palaryn": "github:PJuniszewski/agent-gateway"
+  }
+}

@@ -1,0 +1,54 @@
+name: dev_fast
+version: "1.0.0"
+description: "Development policy - permissive for fast iteration, still blocks dangerous operations"
+
+domain_allowlist: []
+
+domain_blocklist:
+  - "169.254.169.254"
+  - "metadata.google.internal"
+
+rules:
+  - name: "Block metadata endpoints"
+    description: "Always block cloud metadata endpoints"
+    effect: DENY
+    priority: 1
+    conditions:
+      domains:
+        - "169.254.169.254"
+        - "metadata.google.internal"
+
+  - name: "Allow all read operations"
+    description: "Allow all read operations without restriction"
+    effect: ALLOW
+    priority: 10
+    conditions:
+      capabilities:
+        - "read"
+
+  - name: "Allow write operations"
+    description: "Allow write operations in dev mode"
+    effect: ALLOW
+    priority: 20
+    conditions:
+      capabilities:
+        - "write"
+
+  - name: "Require approval for delete and admin"
+    description: "Still require approval for destructive operations"
+    effect: REQUIRE_APPROVAL
+    priority: 30
+    conditions:
+      capabilities:
+        - "delete"
+        - "admin"
+    approval:
+      scope: "admin"
+      ttl_seconds: 7200
+      reason: "Delete/admin operations require approval even in dev"
+
+  - name: "Allow remaining"
+    description: "Allow anything not caught above"
+    effect: ALLOW
+    priority: 100
+    conditions: {}

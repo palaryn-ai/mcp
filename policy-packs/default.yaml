@@ -1,0 +1,46 @@
+name: default
+version: "1.0.0"
+description: "Default policy pack - sensible starter rules for new deployments"
+
+domain_blocklist:
+  - "169.254.169.254"
+  - "metadata.google.internal"
+
+rules:
+  - name: "Block metadata endpoints"
+    description: "Prevent SSRF attacks against cloud metadata services"
+    effect: DENY
+    priority: 1
+    conditions:
+      domains:
+        - "169.254.169.254"
+        - "metadata.google.internal"
+
+  - name: "Allow read operations"
+    description: "Allow all read operations (GET requests) without restriction"
+    effect: ALLOW
+    priority: 10
+    conditions:
+      capabilities:
+        - "read"
+
+  - name: "Require approval for writes"
+    description: "Write operations require human approval"
+    effect: REQUIRE_APPROVAL
+    priority: 20
+    conditions:
+      capabilities:
+        - "write"
+    approval:
+      scope: "admin"
+      ttl_seconds: 3600
+      reason: "Write operations require approval"
+
+  - name: "Deny delete and admin"
+    description: "Block delete and admin operations by default"
+    effect: DENY
+    priority: 30
+    conditions:
+      capabilities:
+        - "delete"
+        - "admin"

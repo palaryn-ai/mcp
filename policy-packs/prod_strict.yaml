@@ -1,0 +1,83 @@
+name: prod_strict
+version: "1.0.0"
+description: "Production strict policy - minimal permissions, everything requires justification"
+
+domain_allowlist:
+  - "api.github.com"
+  - "api.slack.com"
+
+domain_blocklist:
+  - "169.254.169.254"
+  - "metadata.google.internal"
+  - "metadata.aws.internal"
+  - "localhost"
+  - "127.0.0.1"
+  - "0.0.0.0"
+
+rules:
+  - name: "Block metadata and internal endpoints"
+    description: "Prevent SSRF and internal network access"
+    effect: DENY
+    priority: 1
+    conditions:
+      domains:
+        - "169.254.169.254"
+        - "metadata.google.internal"
+        - "localhost"
+        - "127.0.0.1"
+
+  - name: "Block IP literal access"
+    description: "No direct IP access allowed in production"
+    effect: DENY
+    priority: 2
+    conditions:
+      domains:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+
+  - name: "Allow GET to allowlisted domains only"
+    description: "Only allow reads to explicitly allowlisted domains"
+    effect: ALLOW
+    priority: 10
+    conditions:
+      tools:
+        - "http.request"
+      capabilities:
+        - "read"
+      methods:
+        - "GET"
+      domains:
+        - "api.github.com"
+        - "api.slack.com"
+
+  - name: "Require approval for all writes"
+    description: "Every write operation needs security review"
+    effect: REQUIRE_APPROVAL
+    priority: 20
+    conditions:
+      capabilities:
+        - "write"
+    approval:
+      scope: "security_lead"
+      ttl_seconds: 1800
+      reason: "Production write operations require security review"
+
+  - name: "Deny delete and admin"
+    description: "No delete or admin operations in production"
+    effect: DENY
+    priority: 25
+    conditions:
+      capabilities:
+        - "delete"
+        - "admin"
+
+  - name: "Require approval for unmatched"
+    description: "Anything not explicitly allowed needs approval"
+    effect: REQUIRE_APPROVAL
+    priority: 100
+    conditions: {}
+    approval:
+      scope: "admin"
+      ttl_seconds: 1800
+      reason: "Unrecognized operation in production requires admin approval"

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "palaryn": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["palaryn-mcp"],
+      "env": {
+        "PALARYN_MCP_WORKSPACE": "ws-my-project",
+        "PALARYN_MCP_ACTOR": "claude-code",
+        "PALARYN_MCP_PLATFORM": "claude_code",
+        "POLICY_PACK_PATH": "./policy-packs/default.yaml"
+      }
+    }
+  }
+}
