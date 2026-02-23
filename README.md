@@ -46,7 +46,7 @@ Each tool accepts: `url` (required), `headers`, `body`, `timeout_ms`, `max_cost_
 ### Option 1: Hosted (recommended -- no install needed)
 
 ```bash
-claude mcp add --transport http palaryn https://palaryn.com/mcp
+claude mcp add --transport http palaryn https://app.palaryn.com/mcp
 ```
 
 Done. All requests from Claude Code now route through Palaryn.
@@ -302,7 +302,7 @@ Every tool call returns two content blocks:
 
 ```bash
 # One-line setup (hosted)
-claude mcp add --transport http palaryn https://palaryn.com/mcp
+claude mcp add --transport http palaryn https://app.palaryn.com/mcp
 
 # Local setup
 claude mcp add palaryn -- npx palaryn-mcp
@@ -332,7 +332,7 @@ Add to your Windsurf MCP configuration:
 {
   "mcpServers": {
     "palaryn": {
-      "serverUrl": "https://palaryn.com/mcp"
+      "serverUrl": "https://app.palaryn.com/mcp"
     }
   }
 }

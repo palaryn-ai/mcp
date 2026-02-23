@@ -5,7 +5,7 @@
 One command, no installation required:
 
 ```bash
-claude mcp add --transport http palaryn https://palaryn.com/mcp
+claude mcp add --transport http palaryn https://app.palaryn.com/mcp
 ```
 
 Verify it works:

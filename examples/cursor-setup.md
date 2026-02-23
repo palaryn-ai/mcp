@@ -8,7 +8,7 @@ Add to your Cursor MCP settings (Settings > MCP Servers):
 {
   "mcpServers": {
     "palaryn": {
-      "serverUrl": "https://palaryn.com/mcp"
+      "serverUrl": "https://app.palaryn.com/mcp"
     }
   }
 }
