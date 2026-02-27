@@ -51,24 +51,7 @@ claude mcp add --transport http palaryn https://app.palaryn.com/mcp
 
 Done. All requests from Claude Code now route through Palaryn. You will be prompted to log in via OAuth on first use.
 
-### Option 2: Local (clone + install)
-
-> **Prerequisite**: The gateway dependency is hosted in a private GitHub repo. You need a GitHub personal access token with access to `PJuniszewski/agent-gateway`. Configure it before running `npm install`:
->
-> ```bash
-> git config --global url."https://<YOUR_GH_TOKEN>@github.com/".insteadOf "https://github.com/"
-> ```
-
-```bash
-git clone https://github.com/palaryn-ai/mcp.git
-cd mcp
-npm install
-
-# Add to Claude Code
-claude mcp add palaryn -- node bin/palaryn-mcp.js
-```
-
-### Option 3: Project-level config
+### Option 2: Project-level config
 
 Create `.mcp.json` in your project root (see `.mcp.json.example`):
 
@@ -87,7 +70,7 @@ Create `.mcp.json` in your project root (see `.mcp.json.example`):
 }
 ```
 
-> **Note**: Option 3 assumes you have already cloned and installed the repo (Option 2). `npx` resolves `palaryn-mcp` from the local `node_modules/.bin`.
+> **Note**: Ensure `palaryn-mcp` is installed (e.g., via `npm install palaryn-mcp`) so `npx` can resolve it.
 
 ---
 
@@ -290,9 +273,6 @@ Every tool call returns two content blocks:
 ```bash
 # Hosted (requires Palaryn account)
 claude mcp add --transport http palaryn https://app.palaryn.com/mcp
-
-# Local setup (after clone + install)
-claude mcp add palaryn -- node bin/palaryn-mcp.js
 ```
 
 ### Cursor
@@ -355,29 +335,6 @@ Shorthand for GET requests. Same parameters as `http_request` minus `method` and
 ### `http_post`
 
 Shorthand for POST requests. Same parameters as `http_request` minus `method`.
-
----
-
-## Development
-
-### Build from source (full gateway)
-
-```bash
-git clone https://github.com/PJuniszewski/agent-gateway.git
-cd agent-gateway
-npm install
-npm run build
-```
-
-### Run tests (full gateway)
-
-```bash
-# Full test suite (2700+ tests)
-npm test
-
-# MCP-specific tests
-npx jest tests/unit/mcp-bridge.test.ts tests/unit/mcp-http-transport.test.ts
-```
 
 ---
 
