@@ -43,24 +43,29 @@ Each tool accepts: `url` (required), `headers`, `body`, `timeout_ms`, `max_cost_
 
 ## Quick Start
 
-### Option 1: Hosted (recommended -- no install needed)
+### Option 1: Hosted (requires a Palaryn account)
 
 ```bash
 claude mcp add --transport http palaryn https://app.palaryn.com/mcp
 ```
 
-Done. All requests from Claude Code now route through Palaryn.
+Done. All requests from Claude Code now route through Palaryn. You will be prompted to log in via OAuth on first use.
 
-### Option 2: Local (npx)
+### Option 2: Local (clone + install)
+
+> **Prerequisite**: The gateway dependency is hosted in a private GitHub repo. You need a GitHub personal access token with access to `PJuniszewski/agent-gateway`. Configure it before running `npm install`:
+>
+> ```bash
+> git config --global url."https://<YOUR_GH_TOKEN>@github.com/".insteadOf "https://github.com/"
+> ```
 
 ```bash
-# Clone this repo
-git clone https://github.com/Palanyr/mcp.git
+git clone https://github.com/palaryn-ai/mcp.git
 cd mcp
 npm install
 
 # Add to Claude Code
-claude mcp add palaryn -- npx palaryn-mcp
+claude mcp add palaryn -- node bin/palaryn-mcp.js
 ```
 
 ### Option 3: Project-level config
@@ -82,25 +87,7 @@ Create `.mcp.json` in your project root (see `.mcp.json.example`):
 }
 ```
 
-### Option 4: Docker
-
-```bash
-docker run -i --rm ghcr.io/palanyr/mcp:latest
-```
-
-Or in `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "palaryn": {
-      "type": "stdio",
-      "command": "docker",
-      "args": ["run", "-i", "--rm", "ghcr.io/palanyr/mcp:latest"]
-    }
-  }
-}
-```
+> **Note**: Option 3 assumes you have already cloned and installed the repo (Option 2). `npx` resolves `palaryn-mcp` from the local `node_modules/.bin`.
 
 ---
 
@@ -122,7 +109,7 @@ Pass a custom policy via environment variable:
 ```bash
 claude mcp add palaryn \
   -e POLICY_PACK_PATH=./policy-packs/prod_strict.yaml \
-  -- npx palaryn-mcp
+  -- node bin/palaryn-mcp.js
 ```
 
 ---
@@ -301,11 +288,11 @@ Every tool call returns two content blocks:
 ### Claude Code
 
 ```bash
-# One-line setup (hosted)
+# Hosted (requires Palaryn account)
 claude mcp add --transport http palaryn https://app.palaryn.com/mcp
 
-# Local setup
-claude mcp add palaryn -- npx palaryn-mcp
+# Local setup (after clone + install)
+claude mcp add palaryn -- node bin/palaryn-mcp.js
 ```
 
 ### Cursor
@@ -385,7 +372,7 @@ npm run build
 ### Run tests (full gateway)
 
 ```bash
-# Full test suite (1600+ tests)
+# Full test suite (2700+ tests)
 npm test
 
 # MCP-specific tests

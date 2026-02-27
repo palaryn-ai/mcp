@@ -18,8 +18,10 @@ Add to your Cursor MCP settings (Settings > MCP Servers):
 
 ### 1. Install
 
+> **Prerequisite**: The gateway dependency is in a private GitHub repo. You need a GitHub token with access to `PJuniszewski/agent-gateway`. See the main README for details.
+
 ```bash
-git clone https://github.com/Palanyr/mcp.git
+git clone https://github.com/palaryn-ai/mcp.git
 cd mcp
 npm install
 ```

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node node_modules/palaryn/dist/src/mcp/server.js",
-    "postinstall": "cd node_modules/palaryn && npm ci && npm run build"
+    "postinstall": "cd node_modules/palaryn && NODE_ENV=development npm install && npm run build"
   },
   "files": [
     "bin/",
@@ -30,11 +30,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Palanyr/mcp.git"
+    "url": "https://github.com/palaryn-ai/mcp.git"
   },
-  "homepage": "https://github.com/Palanyr/mcp#readme",
+  "homepage": "https://github.com/palaryn-ai/mcp#readme",
   "bugs": {
-    "url": "https://github.com/Palanyr/mcp/issues"
+    "url": "https://github.com/palaryn-ai/mcp/issues"
   },
   "engines": {
     "node": ">=20.0.0"

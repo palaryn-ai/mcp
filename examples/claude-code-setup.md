@@ -1,12 +1,14 @@
 # Claude Code Setup Guide
 
-## Hosted (Recommended)
+## Hosted (Requires a Palaryn Account)
 
-One command, no installation required:
+One command, no local installation required:
 
 ```bash
 claude mcp add --transport http palaryn https://app.palaryn.com/mcp
 ```
+
+> You will be prompted to log in via OAuth on first use.
 
 Verify it works:
 
@@ -18,8 +20,10 @@ Verify it works:
 
 ### 1. Install
 
+> **Prerequisite**: The gateway dependency is in a private GitHub repo. You need a GitHub token with access to `PJuniszewski/agent-gateway`. See the main README for details.
+
 ```bash
-git clone https://github.com/Palanyr/mcp.git
+git clone https://github.com/palaryn-ai/mcp.git
 cd mcp
 npm install
 ```
@@ -27,7 +31,7 @@ npm install
 ### 2. Add to Claude Code
 
 ```bash
-claude mcp add palaryn -- npx palaryn-mcp
+claude mcp add palaryn -- node bin/palaryn-mcp.js
 ```
 
 ### 3. Verify
@@ -65,7 +69,7 @@ Use a stricter policy for production work:
 ```bash
 claude mcp add palaryn \
   -e POLICY_PACK_PATH=./policy-packs/prod_strict.yaml \
-  -- npx palaryn-mcp
+  -- node bin/palaryn-mcp.js
 ```
 
 ## Environment Variables
