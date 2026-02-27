@@ -1,0 +1,177 @@
+Implement the following plan:
+
+# Palaryn MCP Repo Review
+
+## Context
+
+Full review of `/Users/patrykjuniszewski/palaryn-mcp` — a thin MCP wrapper around the Palaryn gateway (`agent-gateway`). The repo exposes the gateway as a Model Context Protocol server for Claude Code, Cursor, and other MCP clients. Goal: determine if it works out of the box, identify config issues, and audit the README for accuracy.
+
+---
+
+## Findings
+
+### A. Critical Issues (Won't Work Out of the Box)
+
+#### 1. Dependency is from a private GitHub repo
+- `package.json` has: `"palaryn": "github:PJuniszewski/agent-gateway"`
+- This is a **private repo** (memory confirms git URLs need a GH token)
+- **Impact**: `npm install` will fail for anyone without access to the private repo
+- **Fix**: Either publish the gateway to npm, make the repo public, or document that a GH token is needed
+
+#### 2. GitHub URLs in README/package.json are wrong
+- `package.json` references: `https://github.com/Palanyr/mcp.git` (capital P, "Palanyr" org)
+- Actual remote: `https://github.com/palaryn-ai/mcp.git`
+- README clone instructions: `git clone https://github.com/Palanyr/mcp.git` — **broken URL**
+- **Fix**: Update all URLs from `Palanyr/mcp` to `palaryn-ai/mcp`
+
+#### 3. `npx palaryn-mcp` won't work
+- Package `@palaryn/mcp` is not published to npm
+- All Quick Start options that say `npx palaryn-mcp` will fail for end users
+- Only works locally after cloning + installing
+- **Fix**: Either publish to npm, or change docs to use local paths (e.g., `node /path/to/bin/palaryn-mcp.js`)
+
+#### 4. Docker image doesn't exist
+- README references `ghcr.io/palanyr/mcp:latest` (Option 4)
+- No CI/CD pipeline exists to build/push this image
+- **Fix**: Either add a GitHub Actions workflow to build+push, or remove Option 4 from README
+
+#### 5. No `package-lock.json`
+- Missing lock file means non-reproducible installs
+- Dockerfile uses `npm install` (not `npm ci`) because there's no lock file
+- **Fix**: Run `npm install` and commit the lock file
+
+### B. README Inaccuracies
+
+#### 6. Test count is wrong
+- README line 389: "Full test suite (1600+ tests)"
+- Actual: **2679 passed, 2737 total** (as of today)
+- **Fix**: Update to "2700+ tests" or just say "comprehensive test suite"
+
+#### 7. Hosted MCP endpoint assumption
+- README Option 1: `claude mcp add --transport http palaryn https://app.palaryn.com/mcp`
+- This requires the deployed gateway to have `MCP_OAUTH_ENABLED=true` and the full OAuth flow
+- Should document that this requires a Palaryn account/login
+- Same in `examples/claude-code-setup.md` and `examples/cursor-setup.md`
+
+### C. Potential Runtime Issues
+
+#### 8. `postinstall` script is fragile
+- Script: `cd node_modules/palaryn && npm ci && npm run build`
+- If user has `NODE_ENV=production` in their shell, `npm ci` will skip devDependencies (TypeScript, jest, etc.) and `npm run build` (tsc) will fail
+- **Fix**: Change to `cd node_modules/palaryn && NODE_ENV=development npm ci && npm run build`
+
+#### 9. `POLICY_PACK_PATH` relative path issue
+- Default: `./policy-packs/default.yaml`
+- Resolves relative to `process.cwd()`, NOT the MCP server location
+- If a user runs `npx palaryn-mcp` from their project directory, the path won't resolve (policy-packs/ is in the MCP repo, not their project)
+- **Fix**: Resolve relative to the package directory, or bundle an absolute path
+
+#### 10. Dockerfile `NODE_ENV=production` placement is OK but marginal
+- `NODE_ENV=production` is set after `npm install`, so postinstall works
+- But if someone builds with `--build-arg NODE_ENV=production`, it would break
+- Minor concern, current Dockerfile is fine
+
+### D. README Content Accuracy (Verified Correct)
+
+These parts are accurate and match the source code:
+
+- Three MCP tools (`http_request`, `http_get`, `http_post`) with correct schemas
+- Tool parameters (url, method, headers, body, timeout_ms, max_cost_usd, purpose, labels)
+- Pipeline stages (rate limiting, anomaly detection, policy, DLP, budget, execution, audit)
+- Environment variables and defaults (workspace, actor, platform, policy path)
+- Two transport modes (stdio + HTTP)
+- Response format (two content blocks: response + metadata)
+- Policy pack descriptions match actual YAML files
+- Custom policy YAML format is correct
+- MCP protocol methods (initialize, tools/list, tools/call, ping)
+- OPA/Rego mention — confirmed `src/policy/opa-engine.ts` exists
+- DLP, SSRF, budget, rate limiting features all exist in gateway
+
+---
+
+## Fix Plan
+
+### Step 1: Fix `package.json`
+
+**File**: `/Users/patrykjuniszewski/palaryn-mcp/package.json`
+
+- Update `repository.url` from `https://github.com/Palanyr/mcp.git` to `https://github.com/palaryn-ai/mcp.git`
+- Update `homepage` from `https://github.com/Palanyr/mcp#readme` to `https://github.com/palaryn-ai/mcp#readme`
+- Update `bugs.url` from `https://github.com/Palanyr/mcp/issues` to `https://github.com/palaryn-ai/mcp/issues`
+- Fix postinstall: change `cd node_modules/palaryn && npm ci && npm run build` to `cd node_modules/palaryn && NODE_ENV=development npm ci && npm run build`
+
+### Step 2: Fix `README.md`
+
+**File**: `/Users/patrykjuniszewski/palaryn-mcp/README.md`
+
+- **Line 58**: Fix clone URL from `https://github.com/Palanyr/mcp.git` to `https://github.com/palaryn-ai/mcp.git`
+- **Lines 86-103**: Remove Docker Option 4 entirely (image doesn't exist, no CI to build it)
+- **Lines 54-64**: Change npx-based instructions to `node bin/palaryn-mcp.js` for local setup (npx won't work without npm publish). Keep npx in project-level config since that assumes local clone.
+- **Line 389**: Update test count from "1600+" to "2700+"
+- **Lines 399-401**: Fix Related links from `Palanyr` to `palaryn-ai`
+- Add a **Prerequisites** section noting that the gateway dependency requires a GitHub token with access to the private `PJuniszewski/agent-gateway` repo. Document: `npm config set //npm.pkg.github.com/:_authToken=<token>` or use `.npmrc`
+- Add note to hosted option that it requires a Palaryn account (will prompt OAuth login)
+
+### Step 3: Fix `examples/claude-code-setup.md`
+
+**File**: `/Users/patrykjuniszewski/palaryn-mcp/examples/claude-code-setup.md`
+
+- **Line 21**: Fix clone URL from `Palanyr/mcp` to `palaryn-ai/mcp`
+- Add note about GH token requirement for install
+- Add note that hosted option requires a Palaryn account
+
+### Step 4: Fix `examples/cursor-setup.md`
+
+**File**: `/Users/patrykjuniszewski/palaryn-mcp/examples/cursor-setup.md`
+
+- **Line 21**: Fix clone URL from `Palanyr/mcp` to `palaryn-ai/mcp`
+- Add note about GH token requirement for install
+
+### Step 5: Fix postinstall resilience & generate lock file
+
+```bash
+cd /Users/patrykjuniszewski/palaryn-mcp
+npm install   # generates package-lock.json
+```
+
+Commit `package-lock.json` for reproducible builds.
+
+### Step 6: Fix POLICY_PACK_PATH resolution (in agent-gateway)
+
+**File**: `/Users/patrykjuniszewski/agent-gateway/src/mcp/server.ts`
+
+The default `POLICY_PACK_PATH=./policy-packs/default.yaml` resolves relative to `cwd()`. When running via `npx` or `node bin/palaryn-mcp.js` from a different directory, the path won't resolve. Fix: resolve relative to `__dirname` when no env var is set, or document the limitation in README.
+
+---
+
+## Verification
+
+1. Run `npm install` in palaryn-mcp — confirm postinstall completes (TypeScript builds)
+2. Run `node bin/palaryn-mcp.js` and pipe a JSON-RPC initialize message to verify server starts
+3. Confirm all GitHub URLs resolve to correct repos
+4. Review the README reads cleanly after edits
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/patrykjuniszewski/.REDACTED.jsonl
+
+If this plan can be broken down into multiple independent tasks, consider using the TeamCreate tool to create a team and parallelize the work.
+
+---
+
+yes, commit all changes in both repos
+
+---
+
+push both
+
+---
+
+test npm install in palaryn-mcp now
+
+---
+
+dobra, stworz plan przetestowania kazdej metody wylistowanej w docsach, chcemy sprawdzic czy wszystko dziala od a-z, mcp, curl install, http/https, python sdk, typesscript sdk etc etc
+
+---
+
+[Request interrupted by user for tool use]
